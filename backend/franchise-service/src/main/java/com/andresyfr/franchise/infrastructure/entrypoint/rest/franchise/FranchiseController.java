@@ -36,6 +36,7 @@ public class FranchiseController {
 
     /**
      * Creates a franchise.
+     *
      * @param request validated body
      * @return created franchise with HTTP status 201
      */
@@ -49,8 +50,9 @@ public class FranchiseController {
 
     /**
      * Renames an existing franchise.
+     *
      * @param franchiseId identifier from the URL
-     * @param request validated body
+     * @param request     validated body
      * @return updated franchise
      */
     @Operation(summary = "Rename a franchise")
