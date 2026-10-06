@@ -31,6 +31,11 @@ subprojects {
         options.compilerArgs.addAll(['-parameters', '-Xlint:unchecked', '-Xlint:deprecation'])
     }
 
+    tasks.withType(Javadoc).configureEach {
+        options.encoding = 'UTF-8'
+        options.addStringOption('Xdoclint:all,-missing', '-quiet')
+    }
+
     tasks.named('test') {
         useJUnitPlatform()
         finalizedBy tasks.named('jacocoTestReport')

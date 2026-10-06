@@ -37,7 +37,7 @@ class MongoFranchiseAdapterIntegrationTest {
     void resetCollection() {
         template.dropCollection(FranchiseDocument.class)
                 .then(template.indexOps(FranchiseDocument.class)
-                        .ensureIndex(new Index().on("name", Sort.Direction.ASC).unique()))
+                        .createIndex(new Index().on("name", Sort.Direction.ASC).unique()))
                 .block();
     }
 

@@ -34,7 +34,7 @@ jobs:
       - name: Build and test all services
         run: |
           chmod +x gradlew
-          ./gradlew build
+          ./gradlew build javadoc
 
       - name: Upload reports
         if: always()

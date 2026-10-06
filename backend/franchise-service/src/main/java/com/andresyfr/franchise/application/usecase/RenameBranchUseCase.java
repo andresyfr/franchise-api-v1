@@ -31,7 +31,7 @@ public class RenameBranchUseCase {
      * @param branchId identifier of the branch to rename
      * @param newName  proposed new name
      * @return the current or updated branch
-     * @throws ResourceNotFoundExceptio when the branch does not exist
+     * @throws ResourceNotFoundException when the branch does not exist
      * @throws com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException when another
      * branch of the same franchise already uses the name
      */
