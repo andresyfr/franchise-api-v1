@@ -3,10 +3,9 @@ package com.andresyfr.franchise.infrastructure.entrypoint.rest.error;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-
 import com.andresyfr.franchise.domain.exception.BusinessRuleViolationException;
+import com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException;
 import com.andresyfr.franchise.domain.exception.ResourceNotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,15 +25,12 @@ import org.springframework.web.server.ServerWebInputException;
 public class GlobalErrorHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorHandler.class);
-
     private static final String CODE_PROPERTY = "code";
     private static final String TIMESTAMP_PROPERTY = "timestamp";
     private static final String ERRORS_PROPERTY = "errors";
-
     private static final String VALIDATION_ERROR = "VALIDATION_ERROR";
     private static final String MALFORMED_REQUEST = "MALFORMED_REQUEST";
     private static final String INTERNAL_ERROR = "INTERNAL_ERROR";
-
     private final Clock clock;
 
     public GlobalErrorHandler(Clock clock) {
@@ -44,6 +40,11 @@ public class GlobalErrorHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleResourceNotFound(ResourceNotFoundException exception) {
         return respond(HttpStatus.NOT_FOUND, exception.getMessage(), exception.getCode());
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ProblemDetail> handleResourceAlreadyExists(ResourceAlreadyExistsException exception) {
+        return respond(HttpStatus.CONFLICT, exception.getMessage(), exception.getCode());
     }
 
     @ExceptionHandler(BusinessRuleViolationException.class)

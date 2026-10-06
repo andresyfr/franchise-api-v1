@@ -1,5 +1,8 @@
 package com.andresyfr.franchise.domain.exception;
 
+/**
+ * Indicates that a required domain resource does not exist.
+ */
 public class ResourceNotFoundException extends DomainException {
 
     private static final String CODE = "RESOURCE_NOT_FOUND";
