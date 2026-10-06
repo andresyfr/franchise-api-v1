@@ -1,0 +1,8 @@
+# Cloud profile for (Render): JSON logs (ECS) including trace.id / span.id
+logging:
+  structured:
+    format:
+      console: ecs
+    ecs:
+      service:
+        environment: ${APP_ENVIRONMENT:cloud}

@@ -42,3 +42,7 @@ logs/
 # Operating system
 .DS_Store
 Thumbs.db
+build
+build*
+checksums.lock
+/.gradle/*

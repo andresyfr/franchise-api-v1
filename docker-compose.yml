@@ -1,0 +1,43 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: franchise-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - franchise_mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  franchise-api:
+    build: .
+    container_name: franchise-api
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/franchisedb
+      OTLP_EXPORT_ENABLED: ${OTLP_EXPORT_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-lgtm:4318/v1/traces
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://otel-lgtm:4318/v1/metrics
+
+  # Optional local observability stack: Grafana + Tempo + Prometheus + Loki + OTel Collector
+  # docker compose --profile observability up --build   (with OTLP_EXPORT_ENABLED=true)
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: franchise-otel-lgtm
+    profiles: ["observability"]
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+
+volumes:
+  franchise_mongodb_data:
