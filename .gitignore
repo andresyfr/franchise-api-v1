@@ -42,3 +42,12 @@ logs/
 # Operating system
 .DS_Store
 Thumbs.db
+build
+checksums.lock
+/.gradle/*
+
+# Frontend
+node_modules/
+dist/
+.angular/
+coverage/
