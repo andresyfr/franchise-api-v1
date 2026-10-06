@@ -1,0 +1,28 @@
+# Render Blueprint: backend deployment.
+# Render > New > Blueprint > select this repository.
+services:
+  - type: web
+    name: franchise-service
+    runtime: docker
+    plan: free
+    region: virginia
+    branch: main
+    dockerfilePath: ./backend/franchise-service/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    # Only redeploy when the backend changes.
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud
+      - key: APP_ENVIRONMENT
+        value: render
+      # Render requests this value when creating the Blueprint (Terraform output).
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
+      # The free instance has 512 MB of RAM.
+      - key: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC"
