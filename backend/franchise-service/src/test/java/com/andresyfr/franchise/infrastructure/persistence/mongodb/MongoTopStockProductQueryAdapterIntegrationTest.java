@@ -1,5 +1,7 @@
 package com.andresyfr.franchise.infrastructure.persistence.mongodb;
 
+import com.andresyfr.franchise.support.MongoTestSupport;
+
 import com.andresyfr.franchise.domain.model.Branch;
 import com.andresyfr.franchise.domain.model.Product;
 import com.andresyfr.franchise.domain.model.TopStockProduct;
@@ -44,9 +46,7 @@ class MongoTopStockProductQueryAdapterIntegrationTest {
 
     @BeforeEach
     void resetCollections() {
-        template.dropCollection(BranchDocument.class)
-                .then(template.dropCollection(ProductDocument.class))
-                .block();
+        MongoTestSupport.reset(template, BranchDocument.class, ProductDocument.class);
     }
 
     @Test

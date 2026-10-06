@@ -1,5 +1,7 @@
 package com.andresyfr.franchise.infrastructure.persistence.mongodb;
 
+import com.andresyfr.franchise.support.MongoTestSupport;
+
 import com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException;
 import com.andresyfr.franchise.domain.model.Franchise;
 
@@ -9,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.index.Index;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -34,11 +34,8 @@ class MongoFranchiseAdapterIntegrationTest {
     private ReactiveMongoTemplate template;
 
     @BeforeEach
-    void resetCollection() {
-        template.dropCollection(FranchiseDocument.class)
-                .then(template.indexOps(FranchiseDocument.class)
-                        .createIndex(new Index().on("name", Sort.Direction.ASC).unique()))
-                .block();
+    void resetCollections() {
+        MongoTestSupport.reset(template, FranchiseDocument.class);
     }
 
     @Test
