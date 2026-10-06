@@ -1,7 +1,7 @@
 rootProject.name = 'franchise-backend'
 
-// Auto-descubrimiento: toda carpeta con build.gradle es un servicio.
-// Para agregar un servicio nuevo basta con crear backend/<nombre>/build.gradle.
+// Self-discovery: every folder with build.gradle is a service.
+// To add a new service it is enough to create backend/<name>/build.gradle.
 def excluded = ['gradle', 'buildSrc', 'build', '.gradle']
 
 rootDir.eachDir { dir ->

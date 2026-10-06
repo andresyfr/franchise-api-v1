@@ -1,0 +1,11 @@
+# I assign this file as an example to be taken into account in the test, this file must be copied to terraform.tfvars
+#(it is not versioned) and complete the values.
+# The Atlas credentials do NOT go here: use TF_VAR_atlas_client_id and TF_VAR_atlas_client_secret.
+
+atlas_org_id = "REPLACE_WITH_ATLAS_ORG_ID"
+
+# Valores opcionales (ya tienen default):
+# project_name     = "franchise-platform"
+# cluster_name     = "franchise-cluster"
+# backing_provider = "AWS"
+# region           = "US_EAST_1"
