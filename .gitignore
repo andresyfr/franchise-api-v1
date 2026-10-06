@@ -43,7 +43,6 @@ logs/
 .DS_Store
 Thumbs.db
 build
-build*
 checksums.lock
 /.gradle/*
 
