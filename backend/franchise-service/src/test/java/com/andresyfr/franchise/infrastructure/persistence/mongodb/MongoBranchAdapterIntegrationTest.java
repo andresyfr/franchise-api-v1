@@ -37,7 +37,7 @@ class MongoBranchAdapterIntegrationTest {
     void resetCollection() {
         template.dropCollection(BranchDocument.class)
                 .then(template.indexOps(BranchDocument.class)
-                        .ensureIndex(new Index()
+                        .createIndex(new Index()
                                 .on("franchiseId", Sort.Direction.ASC)
                                 .on("name", Sort.Direction.ASC)
                                 .unique()))
