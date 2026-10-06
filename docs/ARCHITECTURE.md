@@ -428,3 +428,52 @@ flowchart LR
 | Frontend (futuro) | Render Static Site | `render.yaml` |
 | Secretos | Variables de entorno en Render | Panel de Render (no se versionan) |
 | CI | GitHub Actions | `backend-ci.yml` y `frontend-ci.yml` |
+
+Fragmento de `render.yaml` para el backend:
+
+```yaml
+services:
+  - type: web
+    name: franchise-service
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./backend/franchise-service/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
+```
+
+---
+
+## 9. Observabilidad
+
+```mermaid
+flowchart LR
+    req["Request HTTP"] --> api["franchise-service"]
+
+    api --> metrics["Métricas<br/>Micrometer"]
+    api --> traces["Trazas<br/>Micrometer Tracing + OpenTelemetry"]
+    api --> logs["Logs<br/>JSON ECS con traceId y spanId"]
+
+    metrics --> prom["/actuator/prometheus"]
+    metrics -. "OTLP opcional" .-> collector["OTel Collector / Grafana LGTM"]
+    traces -. "OTLP opcional" .-> collector
+    api --> health["/actuator/health<br/>liveness, readiness, mongo"]
+```
+
+| Señal | Qué cubre |
+|---|---|
+| Métricas | Latencia HTTP (histogramas), JVM, conexiones a MongoDB, etiqueta `application` |
+| Trazas | Spans HTTP y spans por comando de MongoDB, en la misma traza |
+| Logs | Texto en local, JSON (ECS) con el perfil `cloud` |
+| Health | Liveness, readiness y estado de MongoDB, usado por Render |
+
+---
