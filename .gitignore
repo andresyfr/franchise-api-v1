@@ -46,3 +46,9 @@ build
 build*
 checksums.lock
 /.gradle/*
+
+# Frontend
+node_modules/
+dist/
+.angular/
+coverage/

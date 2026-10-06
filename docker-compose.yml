@@ -14,9 +14,11 @@ services:
       retries: 5
       start_period: 10s
 
-  franchise-api:
-    build: .
-    container_name: franchise-api
+  franchise-service:
+    build:
+      context: ./backend
+      dockerfile: franchise-service/Dockerfile
+    container_name: franchise-service
     depends_on:
       mongodb:
         condition: service_healthy
@@ -28,8 +30,19 @@ services:
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-lgtm:4318/v1/traces
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://otel-lgtm:4318/v1/metrics
 
-  # Optional local observability stack: Grafana + Tempo + Prometheus + Loki + OTel Collector
-  # docker compose --profile observability up --build   (with OTLP_EXPORT_ENABLED=true)
+  # Ejemplo de app frontend (descomentar cuando exista):
+  # franchise-web:
+  #   build:
+  #     context: ./frontend/franchise-web
+  #   ports:
+  #     - "4200:80"
+  #   environment:
+  #     API_BASE_URL: http://localhost:8080
+  #   depends_on:
+  #     - franchise-service
+
+  # Stack de observabilidad opcional: Grafana + Tempo + Prometheus + Loki + OTel Collector
+  #   OTLP_EXPORT_ENABLED=true docker compose --profile observability up --build
   otel-lgtm:
     image: grafana/otel-lgtm:latest
     container_name: franchise-otel-lgtm
