@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObservabilityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.infrastructure.config</a> &gt; <span class="el_source">ObservabilityConfig.java</span></div><h1>ObservabilityConfig.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.infrastructure.config;
+
+import io.micrometer.observation.ObservationPredicate;
+import io.micrometer.observation.ObservationRegistry;
+import org.springframework.boot.autoconfigure.mongo.MongoClientSettingsBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.observability.ContextProviderFactory;
+import org.springframework.data.mongodb.observability.MongoObservationCommandListener;
+import org.springframework.http.server.reactive.observation.ServerRequestObservationContext;
+
+/**
+ * Observability wiring:
+ * &lt;ul&gt;
+ *   &lt;li&gt;Creates spans for every MongoDB command, linked to the HTTP request trace.&lt;/li&gt;
+ *   &lt;li&gt;Excludes actuator calls (health checks, scrapes) from traces and HTTP metrics.&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+@Configuration(proxyBeanMethods = false)
+<span class="nc" id="L20">public class ObservabilityConfig {</span>
+
+    private static final String ACTUATOR_PATH = &quot;/actuator&quot;;
+
+    @Bean
+    public MongoClientSettingsBuilderCustomizer mongoObservationCustomizer(ObservationRegistry observationRegistry) {
+<span class="nc" id="L26">        return settings -&gt; settings</span>
+<span class="nc" id="L27">                .contextProvider(ContextProviderFactory.create(observationRegistry))</span>
+<span class="nc" id="L28">                .addCommandListener(new MongoObservationCommandListener(observationRegistry));</span>
+    }
+
+    @Bean
+    public ObservationPredicate ignoreActuatorRequests() {
+<span class="nc" id="L33">        return (observationName, context) -&gt;</span>
+<span class="nc" id="L34">                !(context instanceof ServerRequestObservationContext serverContext</span>
+<span class="nc bnc" id="L35" title="All 6 branches missed.">                        &amp;&amp; serverContext.getCarrier().getPath().value().startsWith(ACTUATOR_PATH));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

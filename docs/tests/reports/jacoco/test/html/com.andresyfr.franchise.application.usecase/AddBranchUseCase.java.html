@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddBranchUseCase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.application.usecase</a> &gt; <span class="el_source">AddBranchUseCase.java</span></div><h1>AddBranchUseCase.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.application.usecase;
+
+import com.andresyfr.franchise.domain.exception.ResourceNotFoundException;
+import com.andresyfr.franchise.domain.model.Branch;
+import com.andresyfr.franchise.domain.model.Franchise;
+import com.andresyfr.franchise.domain.port.BranchRepository;
+import com.andresyfr.franchise.domain.port.FranchiseRepository;
+import reactor.core.publisher.Mono;
+
+/**
+ * Adds a new branch to an existing franchise.
+ *
+ * &lt;p&gt;Order of checks: name validity, franchise existence and name uniqueness
+ * within the franchise. Invalid input is rejected before any database call.&lt;/p&gt;
+ */
+public class AddBranchUseCase {
+
+    private final FranchiseRepository franchiseRepository;
+    private final BranchRepository branchRepository;
+
+    /**
+     * Creates the use case.
+     *
+     * @param franchiseRepository port used to verify that the franchise exists
+     * @param branchRepository    port used to check uniqueness and persist the branch
+     */
+<span class="fc" id="L27">    public AddBranchUseCase(FranchiseRepository franchiseRepository, BranchRepository branchRepository) {</span>
+<span class="fc" id="L28">        this.franchiseRepository = franchiseRepository;</span>
+<span class="fc" id="L29">        this.branchRepository = branchRepository;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Validates, creates and persists a branch for the given franchise.
+     *
+     * @param franchiseId identifier of the owning franchise
+     * @param name        proposed branch name
+     * @return the persisted branch
+     * @throws com.andresyfr.franchise.domain.exception.BusinessRuleViolationException when the name is invalid
+     * @throws ResourceNotFoundException when the franchise does not exist
+     * @throws com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException when the franchise
+     * already has a branch with that name
+     */
+    public Mono&lt;Branch&gt; execute(String franchiseId, String name) {
+<span class="fc" id="L44">        return Mono.fromCallable(() -&gt; Branch.create(franchiseId, name))</span>
+<span class="fc" id="L45">                .flatMap(branch -&gt; franchiseRepository.findById(franchiseId)</span>
+<span class="fc" id="L46">                        .switchIfEmpty(Mono.error(() -&gt;</span>
+<span class="fc" id="L47">                                new ResourceNotFoundException(Franchise.RESOURCE_NAME, franchiseId)))</span>
+<span class="fc" id="L48">                        .then(Mono.defer(() -&gt;</span>
+<span class="fc" id="L49">                                BranchNameGuard.ensureAvailable(branchRepository, franchiseId, branch.name())))</span>
+<span class="fc" id="L50">                        .then(Mono.defer(() -&gt; branchRepository.save(branch))));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

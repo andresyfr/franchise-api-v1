@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddProductUseCase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.application.usecase</a> &gt; <span class="el_source">AddProductUseCase.java</span></div><h1>AddProductUseCase.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.application.usecase;
+
+import com.andresyfr.franchise.domain.exception.ResourceNotFoundException;
+import com.andresyfr.franchise.domain.model.Branch;
+import com.andresyfr.franchise.domain.model.Product;
+import com.andresyfr.franchise.domain.port.BranchRepository;
+import com.andresyfr.franchise.domain.port.ProductRepository;
+import reactor.core.publisher.Mono;
+
+/**
+ * Adds a new product to an existing branch.
+ *
+ * &lt;p&gt;Order of checks: name and stock validity, branch existence and name
+ * uniqueness within the branch. Invalid input is rejected before any database call.&lt;/p&gt;
+ */
+public class AddProductUseCase {
+
+    private final BranchRepository branchRepository;
+    private final ProductRepository productRepository;
+
+    /**
+     * Creates the use case.
+     *
+     * @param branchRepository  port used to verify that the branch exists
+     * @param productRepository port used to check uniqueness and persist the product
+     */
+<span class="fc" id="L27">    public AddProductUseCase(BranchRepository branchRepository, ProductRepository productRepository) {</span>
+<span class="fc" id="L28">        this.branchRepository = branchRepository;</span>
+<span class="fc" id="L29">        this.productRepository = productRepository;</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Validates, creates and persists a product for the given branch.
+     *
+     * @param branchId identifier of the branch
+     * @param name     proposed product name
+     * @param stock    initial stock
+     * @return the persisted product
+     * @throws com.andresyfr.franchise.domain.exception.BusinessRuleViolationException
+     * when the name or the stock is invalid
+     * @throws ResourceNotFoundException
+     * when the branch does not exist
+     * @throws com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException
+     * when the branch already offers a product with that name
+     */
+    public Mono&lt;Product&gt; execute(String branchId, String name, int stock) {
+<span class="fc" id="L47">        return Mono.fromCallable(() -&gt; Product.create(branchId, name, stock))</span>
+<span class="fc" id="L48">                .flatMap(product -&gt; branchRepository.findById(branchId)</span>
+<span class="fc" id="L49">                        .switchIfEmpty(Mono.error(() -&gt;</span>
+<span class="fc" id="L50">                                new ResourceNotFoundException(Branch.RESOURCE_NAME, branchId)))</span>
+<span class="fc" id="L51">                        .then(Mono.defer(() -&gt;</span>
+<span class="fc" id="L52">                                ProductNameGuard.ensureAvailable(productRepository, branchId, product.name())))</span>
+<span class="fc" id="L53">                        .then(Mono.defer(() -&gt; productRepository.save(product))));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

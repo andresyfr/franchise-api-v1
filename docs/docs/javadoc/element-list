@@ -1,0 +1,12 @@
+com.andresyfr.franchise
+com.andresyfr.franchise.application.usecase
+com.andresyfr.franchise.domain.exception
+com.andresyfr.franchise.domain.model
+com.andresyfr.franchise.domain.port
+com.andresyfr.franchise.infrastructure.config
+com.andresyfr.franchise.infrastructure.entrypoint.rest.branch
+com.andresyfr.franchise.infrastructure.entrypoint.rest.error
+com.andresyfr.franchise.infrastructure.entrypoint.rest.franchise
+com.andresyfr.franchise.infrastructure.entrypoint.rest.product
+com.andresyfr.franchise.infrastructure.entrypoint.rest.topstock
+com.andresyfr.franchise.infrastructure.persistence.mongodb
