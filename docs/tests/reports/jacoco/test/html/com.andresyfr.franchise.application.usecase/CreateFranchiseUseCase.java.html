@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreateFranchiseUseCase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.application.usecase</a> &gt; <span class="el_source">CreateFranchiseUseCase.java</span></div><h1>CreateFranchiseUseCase.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.application.usecase;
+
+import com.andresyfr.franchise.domain.model.Franchise;
+import com.andresyfr.franchise.domain.port.FranchiseRepository;
+import reactor.core.publisher.Mono;
+
+/**
+ * Creates a franchise after enforcing name uniqueness.
+ */
+public class CreateFranchiseUseCase {
+
+    private final FranchiseRepository franchiseRepository;
+
+<span class="fc" id="L14">    public CreateFranchiseUseCase(FranchiseRepository franchiseRepository) {</span>
+<span class="fc" id="L15">        this.franchiseRepository = franchiseRepository;</span>
+<span class="fc" id="L16">    }</span>
+
+    /**
+     * Validates, creates and persists a franchise without blocking.
+     *
+     * @param name proposed franchise name
+     * @return the persisted franchise
+     * @throws com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException when the name exists
+     */
+    public Mono&lt;Franchise&gt; execute(String name) {
+<span class="fc" id="L26">        return Mono.fromCallable(() -&gt; Franchise.create(name))</span>
+<span class="fc" id="L27">                .flatMap(franchise -&gt; FranchiseNameGuard.ensureAvailable(franchiseRepository, franchise.name())</span>
+<span class="fc" id="L28">                        .then(Mono.defer(() -&gt; franchiseRepository.save(franchise))));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,151 @@
+{
+  "uid": "franchise-service-overview",
+  "title": "Franchise Service · Overview",
+  "description": "HTTP, JVM, MongoDB y trazas de franchise-service (OTLP -> otel-lgtm)",
+  "tags": ["franchise", "spring-boot", "otlp"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "templating": {
+    "list": [
+      { "name": "datasource", "label": "Prometheus", "type": "datasource", "query": "prometheus", "hide": 0 },
+      { "name": "tempo", "label": "Tempo", "type": "datasource", "query": "tempo", "hide": 0 },
+      {
+        "name": "application",
+        "label": "Application",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(application)",
+        "query": { "query": "label_values(application)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1,
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    { "type": "row", "title": "HTTP", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 1, "panels": [] },
+    {
+      "id": 2, "type": "stat", "title": "Requests / s",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "expr": "sum(rate({__name__=~\"http_server_requests(_milliseconds)?_count\", application=~\"$application\"}[$__rate_interval]))" }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Errores 5xx",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 2,
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 } ] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "expr": "100 * (sum(rate({__name__=~\"http_server_requests(_milliseconds)?_count\", application=~\"$application\", status=~\"5..\"}[$__rate_interval])) or vector(0)) / clamp_min(sum(rate({__name__=~\"http_server_requests(_milliseconds)?_count\", application=~\"$application\"}[$__rate_interval])), 1e-9)" }]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Latencia p95",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "ms", "decimals": 1,
+        "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 300 }, { "color": "red", "value": 1000 } ] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=~\"http_server_requests(_milliseconds)?_bucket\", application=~\"$application\"}[$__rate_interval])))" }]
+    },
+    {
+      "id": 5, "type": "stat", "title": "Errores 4xx / s",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "expr": "sum(rate({__name__=~\"http_server_requests(_milliseconds)?_count\", application=~\"$application\", status=~\"4..\"}[$__rate_interval])) or vector(0)" }]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Requests / s por endpoint y estado",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "{{method}} {{uri}} {{status}}",
+        "expr": "sum by (method, uri, status) (rate({__name__=~\"http_server_requests(_milliseconds)?_count\", application=~\"$application\"}[$__rate_interval]))" }]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Latencia p95 por endpoint",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "{{uri}}",
+        "expr": "histogram_quantile(0.95, sum by (le, uri) (rate({__name__=~\"http_server_requests(_milliseconds)?_bucket\", application=~\"$application\"}[$__rate_interval])))" }]
+    },
+
+    { "type": "row", "title": "MongoDB", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 }, "id": 8, "panels": [] },
+    {
+      "id": 9, "type": "timeseries", "title": "Comandos / s",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "{{command}}{{db_operation}}",
+        "expr": "sum by (command, db_operation) (rate({__name__=~\"(mongodb_driver_commands|spring_data_mongodb_command)(_milliseconds)?_count\", application=~\"$application\"}[$__rate_interval]))" }]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Latencia media de comandos",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "{{command}}{{db_operation}}",
+        "expr": "sum by (command, db_operation) (rate({__name__=~\"(mongodb_driver_commands|spring_data_mongodb_command)(_milliseconds)?_sum\", application=~\"$application\"}[$__rate_interval])) / clamp_min(sum by (command, db_operation) (rate({__name__=~\"(mongodb_driver_commands|spring_data_mongodb_command)(_milliseconds)?_count\", application=~\"$application\"}[$__rate_interval])), 1e-9)" }]
+    },
+
+    { "type": "row", "title": "JVM", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 }, "id": 11, "panels": [] },
+    {
+      "id": 12, "type": "timeseries", "title": "Memoria usada",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "{{area}}",
+        "expr": "sum by (area) ({__name__=~\"jvm_memory_used(_bytes)?\", application=~\"$application\"})" }]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "CPU del proceso",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1, "min": 0 }, "overrides": [] },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "cpu",
+        "expr": "max({__name__=~\"process_cpu_usage(_ratio)?\", application=~\"$application\"})" }]
+    },
+    {
+      "id": 14, "type": "timeseries", "title": "Hilos vivos",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [{ "refId": "A", "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "legendFormat": "threads",
+        "expr": "max({__name__=~\"jvm_threads_live(_threads)?\", application=~\"$application\"})" }]
+    },
+
+    { "type": "row", "title": "Trazas", "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 }, "id": 15, "panels": [] },
+    {
+      "id": 16, "type": "table", "title": "Últimas trazas de franchise-api (clic en el Trace ID para abrirla)",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 33 },
+      "datasource": { "type": "tempo", "uid": "${tempo}" },
+      "targets": [{ "refId": "A", "datasource": { "type": "tempo", "uid": "${tempo}" },
+        "queryType": "traceql", "query": "{resource.service.name=\"franchise-api\"}", "limit": 20, "tableType": "traces" }]
+    }
+  ]
+}

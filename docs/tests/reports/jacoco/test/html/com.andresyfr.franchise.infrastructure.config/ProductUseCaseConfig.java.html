@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductUseCaseConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.infrastructure.config</a> &gt; <span class="el_source">ProductUseCaseConfig.java</span></div><h1>ProductUseCaseConfig.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.infrastructure.config;
+
+import com.andresyfr.franchise.application.usecase.AddProductUseCase;
+import com.andresyfr.franchise.application.usecase.RemoveProductUseCase;
+import com.andresyfr.franchise.application.usecase.RenameProductUseCase;
+import com.andresyfr.franchise.application.usecase.UpdateProductStockUseCase;
+import com.andresyfr.franchise.domain.port.BranchRepository;
+import com.andresyfr.franchise.domain.port.ProductRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Registers the framework-free product use cases as Spring beans.
+ */
+@Configuration(proxyBeanMethods = false)
+<span class="nc" id="L16">public class ProductUseCaseConfig {</span>
+
+    /**
+     * Creates the use case that adds products to a branch.
+     *
+     * @param branchRepository  branch output port
+     * @param productRepository product output port
+     * @return configured use case
+     */
+    @Bean
+    public AddProductUseCase addProductUseCase(BranchRepository branchRepository,
+                                               ProductRepository productRepository) {
+<span class="nc" id="L28">        return new AddProductUseCase(branchRepository, productRepository);</span>
+    }
+
+    /**
+     * Creates the use case that removes products from a branch.
+     *
+     * @param productRepository product output port
+     * @return configured use case
+     */
+    @Bean
+    public RemoveProductUseCase removeProductUseCase(ProductRepository productRepository) {
+<span class="nc" id="L39">        return new RemoveProductUseCase(productRepository);</span>
+    }
+
+    /**
+     * Creates the use case that updates product stock.
+     *
+     * @param productRepository product output port
+     * @return configured use case
+     */
+    @Bean
+    public UpdateProductStockUseCase updateProductStockUseCase(ProductRepository productRepository) {
+<span class="nc" id="L50">        return new UpdateProductStockUseCase(productRepository);</span>
+    }
+
+    /**
+     * Creates the use case that renames products.
+     *
+     * @param productRepository product output port
+     * @return configured use case
+     */
+    @Bean
+    public RenameProductUseCase renameProductUseCase(ProductRepository productRepository) {
+<span class="nc" id="L61">        return new RenameProductUseCase(productRepository);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BranchUseCaseConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.infrastructure.config</a> &gt; <span class="el_source">BranchUseCaseConfig.java</span></div><h1>BranchUseCaseConfig.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.infrastructure.config;
+
+import com.andresyfr.franchise.application.usecase.AddBranchUseCase;
+import com.andresyfr.franchise.application.usecase.RenameBranchUseCase;
+import com.andresyfr.franchise.domain.port.BranchRepository;
+import com.andresyfr.franchise.domain.port.FranchiseRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Registers the framework-free branch use cases as Spring beans.
+ *
+ * &lt;p&gt;Kept separate from the franchise configuration so each feature owns its
+ * wiring and can evolve independently.&lt;/p&gt;
+ */
+@Configuration(proxyBeanMethods = false)
+<span class="nc" id="L17">public class BranchUseCaseConfig {</span>
+
+    /**
+     * Creates the use case that adds branches to a franchise.
+     *
+     * @param franchiseRepository franchise output port
+     * @param branchRepository    branch output port
+     * @return configured use case
+     */
+    @Bean
+    public AddBranchUseCase addBranchUseCase(FranchiseRepository franchiseRepository,
+                                             BranchRepository branchRepository) {
+<span class="nc" id="L29">        return new AddBranchUseCase(franchiseRepository, branchRepository);</span>
+    }
+
+    /**
+     * Creates the use case that renames branches.
+     *
+     * @param branchRepository branch output port
+     * @return configured use case
+     */
+    @Bean
+    public RenameBranchUseCase renameBranchUseCase(BranchRepository branchRepository) {
+<span class="nc" id="L40">        return new RenameBranchUseCase(branchRepository);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -26,6 +26,8 @@ public class RemoveProductUseCase {
 
     /**
      * Deletes a product that belongs to the given branch.
+     * It is suggested for future improvements to use logical deletion in order to update the record
+     * and maintain the information for auditing and others
      *
      * @param branchId  identifier of the branch that must own the product
      * @param productId identifier of the product to delete

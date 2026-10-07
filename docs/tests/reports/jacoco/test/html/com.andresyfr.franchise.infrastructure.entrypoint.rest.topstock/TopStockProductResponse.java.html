@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TopStockProductResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.infrastructure.entrypoint.rest.topstock</a> &gt; <span class="el_source">TopStockProductResponse.java</span></div><h1>TopStockProductResponse.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.infrastructure.entrypoint.rest.topstock;
+
+import com.andresyfr.franchise.domain.model.TopStockProduct;
+
+/**
+ * Public representation of the highest-stock product of a branch.
+ *
+ * @param branchId    identifier of the branch
+ * @param branchName  name of the branch
+ * @param productId   identifier of the product
+ * @param productName name of the product
+ * @param stock       highest stock in the branch
+ */
+<span class="fc" id="L14">public record TopStockProductResponse(</span>
+        String branchId,
+        String branchName,
+        String productId,
+        String productName,
+        int stock) {
+
+    /**
+     * Maps the domain read model to its API representation.
+     *
+     * @param product source read model
+     * @return API response
+     */
+    public static TopStockProductResponse from(TopStockProduct product) {
+<span class="fc" id="L28">        return new TopStockProductResponse(</span>
+<span class="fc" id="L29">                product.branchId(),</span>
+<span class="fc" id="L30">                product.branchName(),</span>
+<span class="fc" id="L31">                product.productId(),</span>
+<span class="fc" id="L32">                product.productName(),</span>
+<span class="fc" id="L33">                product.stock());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

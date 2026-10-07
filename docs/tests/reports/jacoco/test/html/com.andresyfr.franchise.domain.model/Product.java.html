@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Product.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.domain.model</a> &gt; <span class="el_source">Product.java</span></div><h1>Product.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.domain.model;
+
+import java.util.Objects;
+import java.util.UUID;
+import com.andresyfr.franchise.domain.exception.BusinessRuleViolationException;
+
+/**
+ * Product offered by a branch, with its available stock.
+ *
+ * &lt;p&gt;The record is immutable: every change returns a new instance. The name is
+ * normalized (trimmed) and the stock must be zero or greater.&lt;/p&gt;
+ *
+ * @param id       unique product identifier
+ * @param branchId identifier of the branch that offers the product
+ * @param name     normalized product name, unique within its branch
+ * @param stock    available units, zero or greater
+ */
+public record Product(String id, String branchId, String name, int stock) {
+
+    /**
+     * Resource name used in error messages and error codes.
+     */
+    public static final String RESOURCE_NAME = &quot;Product&quot;;
+
+    /**
+     * Maximum accepted length for a product name.
+     */
+    public static final int MAX_NAME_LENGTH = 100;
+
+    private static final String INVALID_NAME_CODE = &quot;INVALID_PRODUCT_NAME&quot;;
+    private static final String INVALID_STOCK_CODE = &quot;INVALID_STOCK&quot;;
+
+    /**
+     * Validates the invariants of a product.
+     *
+     * @throws NullPointerException           when {@code id} or {@code branchId} is null
+     * @throws BusinessRuleViolationException when the name is invalid or the stock is negative
+     */
+<span class="fc" id="L39">    public Product {</span>
+<span class="fc" id="L40">        Objects.requireNonNull(id, &quot;id must not be null&quot;);</span>
+<span class="fc" id="L41">        Objects.requireNonNull(branchId, &quot;branchId must not be null&quot;);</span>
+<span class="fc" id="L42">        name = normalizeName(name);</span>
+<span class="fc" id="L43">        validateStock(stock);</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Creates a product with a generated identifier for the given branch.
+     *
+     * @param branchId identifier of the branch that offers the product
+     * @param name     proposed product name
+     * @param stock    initial stock
+     * @return a new valid product
+     * @throws BusinessRuleViolationException when the name or the stock is invalid
+     */
+    public static Product create(String branchId, String name, int stock) {
+<span class="fc" id="L56">        return new Product(UUID.randomUUID().toString(), branchId, name, stock);</span>
+    }
+
+    /**
+     * Returns a renamed copy that keeps identifier, branch and stock.
+     *
+     * @param newName proposed new name
+     * @return a new product instance with the normalized name
+     * @throws BusinessRuleViolationException when the new name is invalid
+     */
+    public Product rename(String newName) {
+<span class="fc" id="L67">        return new Product(id, branchId, newName, stock);</span>
+    }
+
+    /**
+     * Returns a copy with a new stock value.
+     *
+     * @param newStock new available units
+     * @return a new product instance with the updated stock
+     * @throws BusinessRuleViolationException when the stock is negative
+     */
+    public Product updateStock(int newStock) {
+<span class="fc" id="L78">        return new Product(id, branchId, name, newStock);</span>
+    }
+
+    /**
+     * Compares a normalized name with the current product name.
+     *
+     * @param otherName normalized name to compare
+     * @return {@code true} when both names are equal
+     */
+    public boolean hasName(String otherName) {
+<span class="fc" id="L88">        return name.equals(otherName);</span>
+    }
+
+    /**
+     * Indicates whether the product is offered by the given branch.
+     *
+     * @param otherBranchId branch identifier to compare
+     * @return {@code true} when the product belongs to that branch
+     */
+    public boolean belongsTo(String otherBranchId) {
+<span class="fc" id="L98">        return branchId.equals(otherBranchId);</span>
+    }
+
+    private static String normalizeName(String rawName) {
+<span class="fc bfc" id="L102" title="All 4 branches covered.">        if (rawName == null || rawName.isBlank()) {</span>
+<span class="fc" id="L103">            throw new BusinessRuleViolationException(INVALID_NAME_CODE, &quot;Product name must not be blank&quot;);</span>
+        }
+<span class="fc" id="L105">        String normalized = rawName.strip();</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        if (normalized.length() &gt; MAX_NAME_LENGTH) {</span>
+<span class="nc" id="L107">            throw new BusinessRuleViolationException(INVALID_NAME_CODE,</span>
+<span class="nc" id="L108">                    &quot;Product name must not exceed %d characters&quot;.formatted(MAX_NAME_LENGTH));</span>
+        }
+<span class="fc" id="L110">        return normalized;</span>
+    }
+
+    private static void validateStock(int stock) {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (stock &lt; 0) {</span>
+<span class="fc" id="L115">            throw new BusinessRuleViolationException(INVALID_STOCK_CODE, &quot;Stock must be zero or greater&quot;);</span>
+        }
+<span class="fc" id="L117">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

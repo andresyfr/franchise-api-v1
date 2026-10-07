@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalErrorHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">franchise-service</a> &gt; <a href="index.source.html" class="el_package">com.andresyfr.franchise.infrastructure.entrypoint.rest.error</a> &gt; <span class="el_source">GlobalErrorHandler.java</span></div><h1>GlobalErrorHandler.java</h1><pre class="source lang-java linenums">package com.andresyfr.franchise.infrastructure.entrypoint.rest.error;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.List;
+import com.andresyfr.franchise.domain.exception.BusinessRuleViolationException;
+import com.andresyfr.franchise.domain.exception.ResourceAlreadyExistsException;
+import com.andresyfr.franchise.domain.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebInputException;
+
+/**
+ * Translates exceptions into RFC 9457 Problem Details with a stable {@code code}.
+ */
+@RestControllerAdvice
+public class GlobalErrorHandler {
+
+<span class="fc" id="L27">    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalErrorHandler.class);</span>
+    private static final String CODE_PROPERTY = &quot;code&quot;;
+    private static final String TIMESTAMP_PROPERTY = &quot;timestamp&quot;;
+    private static final String ERRORS_PROPERTY = &quot;errors&quot;;
+    private static final String VALIDATION_ERROR = &quot;VALIDATION_ERROR&quot;;
+    private static final String MALFORMED_REQUEST = &quot;MALFORMED_REQUEST&quot;;
+    private static final String INTERNAL_ERROR = &quot;INTERNAL_ERROR&quot;;
+    private final Clock clock;
+
+<span class="fc" id="L36">    public GlobalErrorHandler(Clock clock) {</span>
+<span class="fc" id="L37">        this.clock = clock;</span>
+<span class="fc" id="L38">    }</span>
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleResourceNotFound(ResourceNotFoundException exception) {
+<span class="fc" id="L42">        return respond(HttpStatus.NOT_FOUND, exception.getMessage(), exception.getCode());</span>
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleResourceAlreadyExists(ResourceAlreadyExistsException exception) {
+<span class="fc" id="L47">        return respond(HttpStatus.CONFLICT, exception.getMessage(), exception.getCode());</span>
+    }
+
+    @ExceptionHandler(BusinessRuleViolationException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleBusinessRule(BusinessRuleViolationException exception) {
+<span class="fc" id="L52">        return respond(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage(), exception.getCode());</span>
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleValidation(WebExchangeBindException exception) {
+<span class="fc" id="L57">        List&lt;FieldViolation&gt; violations = exception.getFieldErrors().stream()</span>
+<span class="fc" id="L58">                .map(error -&gt; new FieldViolation(error.getField(), error.getDefaultMessage()))</span>
+<span class="fc" id="L59">                .toList();</span>
+
+<span class="fc" id="L61">        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, &quot;The request contains invalid fields&quot;, VALIDATION_ERROR);</span>
+<span class="fc" id="L62">        problem.setProperty(ERRORS_PROPERTY, violations);</span>
+<span class="fc" id="L63">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);</span>
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleMalformedRequest(ServerWebInputException exception) {
+<span class="nc" id="L68">        return respond(HttpStatus.BAD_REQUEST, &quot;The request body or parameters are malformed&quot;, MALFORMED_REQUEST);</span>
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleResponseStatus(ResponseStatusException exception) {
+<span class="nc" id="L73">        HttpStatusCode status = exception.getStatusCode();</span>
+<span class="nc" id="L74">        return respond(status, exception.getReason(), &quot;HTTP_&quot; + status.value());</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ProblemDetail&gt; handleUnexpected(Exception exception) {
+<span class="fc" id="L79">        LOGGER.error(&quot;Unexpected error while processing request&quot;, exception);</span>
+<span class="fc" id="L80">        return respond(HttpStatus.INTERNAL_SERVER_ERROR, &quot;An unexpected error occurred&quot;, INTERNAL_ERROR);</span>
+    }
+
+    private ResponseEntity&lt;ProblemDetail&gt; respond(HttpStatusCode status, String detail, String code) {
+<span class="fc" id="L84">        return ResponseEntity.status(status).body(problem(status, detail, code));</span>
+    }
+
+    private ProblemDetail problem(HttpStatusCode status, String detail, String code) {
+<span class="fc" id="L88">        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);</span>
+<span class="fc" id="L89">        problem.setProperty(CODE_PROPERTY, code);</span>
+<span class="fc" id="L90">        problem.setProperty(TIMESTAMP_PROPERTY, Instant.now(clock).toString());</span>
+<span class="fc" id="L91">        return problem;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
